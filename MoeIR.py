@@ -41,3 +41,19 @@ class MoeIR:
     def __init__(self) -> None:
         self.funDefs = []
         self.exps = []
+
+
+def intepretExp(exp: Exp):
+    if isinstance(exp, intE):
+        return int(exp.n.getText())
+    elif isinstance(exp, plusE):
+        return intepretExp(exp.l) + intepretExp(exp.r)
+    elif isinstance(exp, multE):
+        return intepretExp(exp.l) * intepretExp(exp.r)
+
+
+def intepret(moe_ir: MoeIR):
+    exps = moe_ir.exps
+    for exp in exps:
+        r = intepretExp(exp)
+        print(r)

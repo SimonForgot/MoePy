@@ -11,24 +11,42 @@ class MoeTS(MoeVisitor):
         for b in ctx.block():
             blk = self.visit(b)
             if isinstance(blk, MoeIR.Exp):
-                print("Exp")
+                self.IR.exps.append(blk)
             else:
-                print("FunDef")
+                self.IR.funDefs.append(blk)
         return self.IR
 
     def visitExpBlk(self, ctx: MoeParser.ExpBlkContext):
-        return MoeIR.intE(3)
+        return self.visit(ctx.expr())
 
     def visitFDBlk(self, ctx: MoeParser.FDBlkContext):
-        return MoeIR.FunDef(1,2,3)
+        return self.visit(ctx.fun_def())
+
+    def visitINT(self, ctx: MoeParser.INTContext):
+        return MoeIR.intE(ctx.INT())
+
+    def visitVAR(self, ctx: MoeParser.VARContext):
+        return MoeIR.idE(ctx.ID())
+
+    def visitADD(self, ctx: MoeParser.ADDContext):
+        left = self.visit(ctx.expr(0))
+        right = self.visit(ctx.expr(1))
+        return MoeIR.plusE(left, right)
+
+    def visitMUL(self, ctx: MoeParser.MULContext):
+        left = self.visit(ctx.expr(0))
+        right = self.visit(ctx.expr(1))
+        return MoeIR.multE(left, right)
+
+    def visitAPP(self, ctx: MoeParser.APPContext):
+        fun_name = MoeIR.idE(ctx.ID())
+        args = []
+        for arg in ctx.expr():
+            moeIR_arg = self.visit(arg)
+            args.append(moeIR_arg)
+        return MoeIR.appE(fun_name, args)
 
     """
-    def visitNumber(self, ctx:MoeParser.NumberContext):
-        return float(ctx.getText())
-
-    def visitParenthesis(self, ctx:MoeParser.ParenthesisContext):
-        return self.visit(ctx.expression())
-
     def visitMulDiv(self, ctx:MoeParser.MulDivContext):
         left = self.visit(ctx.expression(0))
         right = self.visit(ctx.expression(1))
@@ -47,3 +65,4 @@ parser = MoeParser(tokens)
 tree = parser.file_()
 Moetrans = MoeTS()
 IR = Moetrans.visit(tree)
+MoeIR.intepret(IR)
