@@ -23,10 +23,10 @@ class MoeTS(MoeVisitor):
         return self.visit(ctx.fun_def())
 
     def visitINT(self, ctx: MoeParser.INTContext):
-        return MoeIR.intE(ctx.INT())
+        return MoeIR.intE(int(ctx.INT().getText()))
 
     def visitVAR(self, ctx: MoeParser.VARContext):
-        return MoeIR.idE(ctx.ID())
+        return MoeIR.idE(ctx.ID().getText())
 
     def visitADD(self, ctx: MoeParser.ADDContext):
         left = self.visit(ctx.expr(0))
@@ -39,22 +39,24 @@ class MoeTS(MoeVisitor):
         return MoeIR.multE(left, right)
 
     def visitAPP(self, ctx: MoeParser.APPContext):
-        fun_name = MoeIR.idE(ctx.ID())
+        fun_name = ctx.ID().getText()
         args = []
         for arg in ctx.expr():
             moeIR_arg = self.visit(arg)
             args.append(moeIR_arg)
         return MoeIR.appE(fun_name, args)
 
-    """
-    def visitMulDiv(self, ctx:MoeParser.MulDivContext):
-        left = self.visit(ctx.expression(0))
-        right = self.visit(ctx.expression(1))
-        if ctx.op.type == MoeParser.MUL:
-            return left * right
-        else:
-            return left / right
-    """
+    def visitFun_def(self, ctx: MoeParser.Fun_defContext):
+        fun_name = ""
+        args = []
+        i = 0
+        for id in ctx.ID():
+            if i == 0:
+                fun_name = id.getText()
+            else:
+                args.append(id.getText())
+            i += 1
+        return MoeIR.FunDef(fun_name, args, self.visit(ctx.expr()))
 
 
 with open("input.moe", "r") as file:
